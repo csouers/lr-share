@@ -1,0 +1,14 @@
+s = {
+    internalName = "Open Share Menu",
+    title = "Open Share Menu",
+    type = "Export",
+    value = {
+        exportServiceProvider = "com.csouers.macossharemenu",
+        exportServiceProviderTitle = "Mac OS",
+        format = "JPEG",
+        export_colorSpace = "DisplayP3",
+        jpeg_quality = 0.9,
+        lrsm_presetId = "share_menu_helper",
+    },
+    version = 0,
+}
