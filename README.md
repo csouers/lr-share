@@ -113,7 +113,7 @@ Optional custom Modules path:
 3. Open **Export...** and pick destination **Mac OS**.
 4. Choose a command preset in the plugin section.
 
-There is also a **File > Plug-in Extras > Open Share Menu** shortcut.
+There is also a **File > Plug-in Extras > Open Share Menu - JPEG** shortcut.
 
 ## Command presets
 

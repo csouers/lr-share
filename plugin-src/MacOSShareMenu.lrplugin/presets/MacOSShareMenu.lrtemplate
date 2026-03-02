@@ -1,6 +1,6 @@
 s = {
-    internalName = "Open Share Menu",
-    title = "Open Share Menu",
+    internalName = "Open Share Menu - JPEG",
+    title = "Open Share Menu - JPEG",
     type = "Export",
     value = {
         exportServiceProvider = "com.csouers.macossharemenu",

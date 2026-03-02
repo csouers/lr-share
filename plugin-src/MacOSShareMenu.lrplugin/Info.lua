@@ -7,7 +7,7 @@ return {
 
     LrExportMenuItems = {
         {
-            title = 'Open Share Menu',
+            title = 'Open Share Menu - JPEG',
             file = 'ExportToMacOSShareMenuMenuAction.lua',
             enabledWhen = 'photosSelected',
         },
