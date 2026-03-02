@@ -1,19 +1,29 @@
-> WARNING: This project was written by GPT 5.3 Codex.
+> WARNING: This project was written by LLMs.
 
-# Export from Lightroom to Mac OS Share Menu (to AirDrop, iMessage, other apps)
+# Export from Lightroom to macOS Share Menu or Clipboard
 
-Lightroom Classic plugin (`.lrplugin`) that adds a custom export destination and runs an external command on rendered files.
+Lightroom Classic plugins (`.lrplugin`) that add custom export destinations:
+- **Mac OS**: Share menu
+- **Mac OS**: Clipboard
 
 ## What it does
 
+**Share Menu Plugin:**
 - Registers an Export Service Provider: `Mac OS`
-- Lets you choose a bundled command preset from the Export dialog
-- Renders files, then runs one command per export job
-- Appends all rendered file paths as command arguments
-- Fails export if command exits non-zero
-- Defaults export color space to `DisplayP3` (DCI-P3 workflow), not sRGB
-- Default preset stages files into `/tmp` and runs an embedded helper app so Share menu is not tied to Lightroom temp cleanup timing
+- Opens the native macOS Share menu for rendered files
+- Includes preset: "Open Share Menu - JPEG"
 
+**Clipboard Plugin:**
+- Registers an Export Service Provider: `Mac OS`
+- Copies rendered images to the macOS clipboard
+- Includes preset: "Copy To Clipboard - JPEG"
+
+Both plugins:
+- Render files, then run one command per export job
+- Append all rendered file paths as command arguments
+- Fail export if command exits non-zero
+- Default export color space to `DisplayP3` (DCI-P3 workflow)
+- Use embedded helper apps for reliable execution
 
 ## Build
 
@@ -22,8 +32,9 @@ Lightroom Classic plugin (`.lrplugin`) that adds a custom export destination and
 ```
 
 `build.sh` is the canonical build entrypoint. It:
-- Builds `helper/dist/LightroomShareHelper.app`
-- Packages a complete plugin bundle to `dist/MacOSShareMenu.lrplugin`
+- Builds `helper/dist/LightroomShareHelper.app` (share menu)
+- Builds `helper-clipboard/dist/LightroomClipboardHelper.app` (clipboard)
+- Packages complete plugin bundles to `dist/`
 
 Optional debug build:
 
@@ -38,8 +49,9 @@ Optional debug build:
 ./install.sh
 ```
 
-Default install target:
-`~/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
+Default install targets:
+- `~/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
+- `~/Library/Application Support/Adobe/Lightroom/Modules/MacOSClipboard.lrplugin`
 
 Optional custom Modules path:
 
@@ -47,14 +59,16 @@ Optional custom Modules path:
 ./install.sh "/path/to/Adobe/Lightroom/Modules"
 ```
 
-## Enable in Lightroom Classic (manual)
+## Enable in Lightroom Classic
 
 1. Open **File > Plug-in Manager**.
-2. Click **Add** and select `dist/MacOSShareMenu.lrplugin`.
+2. Click **Add** and select both plugins from `dist/`.
 3. Open **Export...** and pick destination **Mac OS**.
-4. Choose a command preset in the plugin section.
+4. Choose from the presets:
+   - "Open Share Menu - JPEG"
+   - "Copy To Clipboard - JPEG"
 
-There is also a **File > Plug-in Extras > Open Share Menu - JPEG** shortcut.
+There is also a **File > Plug-in Extras > Copy to Clipboard - JPEG** shortcut.
 
 ## Signed release (Developer ID + notarization)
 
@@ -92,52 +106,20 @@ xcrun notarytool store-credentials "lr-share-notary" \
 ```
 
 `release-signed.sh`:
-- Builds the plugin via `./build.sh`
-- Signs `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`
-- Notarizes and staples that helper app
-- Produces `dist/MacOSShareMenu.lrplugin.zip` for distribution
-- Removes the temporary helper notarization zip on success
+- Builds both plugins via `./build.sh`
+- Signs and notarizes both helper apps
+- Produces `dist/MacOS-LrPlugins.zip` for distribution
 
+## Built-in Lightroom export presets
 
-## Command presets
+Built-in presets are in:
 
-Edit:
-
-`plugin-src/MacOSShareMenu.lrplugin/CommandPresets.lua`
-
-Then run `./build.sh` again to package changes into `dist/MacOSShareMenu.lrplugin`.
-
-The shipped default (`share_menu_helper`) uses:
-`_PLUGIN.path .. "/Support/LightroomShareHelper.app/Contents/MacOS/LightroomShareHelper"`
-
-Schema:
-
-```lua
-return {
-    defaultPresetId = 'your_preset_id',
-    presets = {
-        {
-            id = 'your_preset_id',
-            title = 'Your preset title',
-            executable = '/absolute/path/to/executable',
-            args = { '--flag', 'value' },
-            stageFiles = false,
-            description = 'Optional description shown in Export dialog',
-        },
-    },
-}
-```
-
-Behavior:
-
-- Plugin builds: `executable + args + rendered file paths`
-- File paths are appended as separate quoted arguments
-- Command runs once per export job
-- Optional `stageFiles = true` copies rendered files to a plugin temp folder before command execution
+- `plugin-src/MacOSShareMenu.lrplugin/presets/MacOSShareMenu.lrtemplate`
+- `clipboard-plugin/MacOSClipboard.lrplugin/presets/CopyToClipboard.lrtemplate`
 
 ## Temp files
 
-This plugin uses Lightroom temporary rendering (`canExportToTemporaryLocation = true`) and hides export location UI.
+These plugins use Lightroom temporary rendering (`canExportToTemporaryLocation = true`) and hide export location UI.
 
 - Lightroom owns creation/cleanup of those temporary rendered files.
 - Plugin does not manage lifecycle for Lightroom temp output.
@@ -145,22 +127,28 @@ This plugin uses Lightroom temporary rendering (`canExportToTemporaryLocation = 
 
 ## File layout
 
-- `plugin-src/MacOSShareMenu.lrplugin/` (plugin source template)
+**Share Plugin:**
+- `plugin-src/MacOSShareMenu.lrplugin/`
 - `plugin-src/MacOSShareMenu.lrplugin/Info.lua`
 - `plugin-src/MacOSShareMenu.lrplugin/MacOSShareMenuExportServiceProvider.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/ExportToMacOSShareMenuMenuAction.lua`
 - `plugin-src/MacOSShareMenu.lrplugin/CommandPresets.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/presets/MacOSShareMenu.lrtemplate`
-- `helper/` (Swift source for the embedded helper app)
+- `helper/` (Swift source for share helper app)
 - `dist/MacOSShareMenu.lrplugin/` (generated install-ready plugin bundle)
 
-The helper app source lives in `helper/`.
-The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`.
+**Clipboard Plugin:**
+- `clipboard-plugin/MacOSClipboard.lrplugin/`
+- `clipboard-plugin/MacOSClipboard.lrplugin/Info.lua`
+- `clipboard-plugin/MacOSClipboard.lrplugin/MacOSClipboardExportServiceProvider.lua`
+- `helper-clipboard/` (Swift source for clipboard helper app)
+- `dist/MacOSClipboard.lrplugin/` (generated install-ready plugin bundle)
 
+The built plugins contain:
+- `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`
+- `dist/MacOSClipboard.lrplugin/Support/LightroomClipboardHelper.app`
 
 ## Notes
 
-- This project is actively used and the core export/share flow is stable.
-- Load only `dist/MacOSShareMenu.lrplugin` in Lightroom Plugin Manager.
+- This project is actively used and the core export/share/clipboard flow is stable.
+- Load both plugins in Lightroom Plugin Manager.
 - Keep executable paths absolute unless intentionally using `_PLUGIN.path` for plugin-relative binaries.
 - If a command fails, Lightroom export is marked failed and a dialog is shown.
