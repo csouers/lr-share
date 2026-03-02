@@ -14,19 +14,6 @@ Lightroom Classic plugin (`.lrplugin`) that adds a custom export destination and
 - Defaults export color space to `DisplayP3` (DCI-P3 workflow), not sRGB
 - Default preset stages files into `/tmp` and runs an embedded helper app so Share menu is not tied to Lightroom temp cleanup timing
 
-## File layout
-
-- `plugin-src/MacOSShareMenu.lrplugin/` (plugin source template)
-- `plugin-src/MacOSShareMenu.lrplugin/Info.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/MacOSShareMenuExportServiceProvider.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/ExportToMacOSShareMenuMenuAction.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/CommandPresets.lua`
-- `plugin-src/MacOSShareMenu.lrplugin/presets/MacOSShareMenu.lrtemplate`
-- `helper/` (Swift source for the embedded helper app)
-- `dist/MacOSShareMenu.lrplugin/` (generated install-ready plugin bundle)
-
-The helper app source lives in `helper/`.
-The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`.
 
 ## Build
 
@@ -43,6 +30,31 @@ Optional debug build:
 ```bash
 ./build.sh debug
 ```
+
+## Install (automatic) and then start/restart Lightroom
+
+```bash
+./build.sh
+./install.sh
+```
+
+Default install target:
+`~/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
+
+Optional custom Modules path:
+
+```bash
+./install.sh "/path/to/Adobe/Lightroom/Modules"
+```
+
+## Enable in Lightroom Classic (manual)
+
+1. Open **File > Plug-in Manager**.
+2. Click **Add** and select `dist/MacOSShareMenu.lrplugin`.
+3. Open **Export...** and pick destination **Mac OS**.
+4. Choose a command preset in the plugin section.
+
+There is also a **File > Plug-in Extras > Open Share Menu - JPEG** shortcut.
 
 ## Signed release (Developer ID + notarization)
 
@@ -86,30 +98,6 @@ xcrun notarytool store-credentials "lr-share-notary" \
 - Produces `dist/MacOSShareMenu.lrplugin.zip` for distribution
 - Removes the temporary helper notarization zip on success
 
-## Install to Lightroom Modules
-
-```bash
-./build.sh
-./install.sh
-```
-
-Default install target:
-`~/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
-
-Optional custom Modules path:
-
-```bash
-./install.sh "/path/to/Adobe/Lightroom/Modules"
-```
-
-## Enable in Lightroom Classic
-
-1. Open **File > Plug-in Manager**.
-2. Click **Add** and select `dist/MacOSShareMenu.lrplugin`.
-3. Open **Export...** and pick destination **Mac OS**.
-4. Choose a command preset in the plugin section.
-
-There is also a **File > Plug-in Extras > Open Share Menu - JPEG** shortcut.
 
 ## Command presets
 
@@ -154,6 +142,21 @@ This plugin uses Lightroom temporary rendering (`canExportToTemporaryLocation = 
 - Lightroom owns creation/cleanup of those temporary rendered files.
 - Plugin does not manage lifecycle for Lightroom temp output.
 - If you add plugin-generated temp artifacts later, those need explicit cleanup.
+
+## File layout
+
+- `plugin-src/MacOSShareMenu.lrplugin/` (plugin source template)
+- `plugin-src/MacOSShareMenu.lrplugin/Info.lua`
+- `plugin-src/MacOSShareMenu.lrplugin/MacOSShareMenuExportServiceProvider.lua`
+- `plugin-src/MacOSShareMenu.lrplugin/ExportToMacOSShareMenuMenuAction.lua`
+- `plugin-src/MacOSShareMenu.lrplugin/CommandPresets.lua`
+- `plugin-src/MacOSShareMenu.lrplugin/presets/MacOSShareMenu.lrtemplate`
+- `helper/` (Swift source for the embedded helper app)
+- `dist/MacOSShareMenu.lrplugin/` (generated install-ready plugin bundle)
+
+The helper app source lives in `helper/`.
+The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`.
+
 
 ## Notes
 
