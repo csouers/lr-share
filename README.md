@@ -1,6 +1,6 @@
 > WARNING: This project was written by GPT 5.3 Codex.
 
-# Mac OS
+# Export from Lightroom to Mac OS Share Menu (to AirDrop, iMessage, other apps)
 
 Lightroom Classic plugin (`.lrplugin`) that adds a custom export destination and runs an external command on rendered files.
 
