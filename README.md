@@ -31,7 +31,6 @@ The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrp
 ## Build
 
 ```bash
-cd ~/lr-share
 ./build.sh
 ```
 
@@ -50,7 +49,6 @@ Optional debug build:
 Use the dedicated release script when distributing to other machines:
 
 ```bash
-cd ~/lr-share
 ./release-signed.sh
 ```
 
@@ -61,7 +59,6 @@ Required environment variables:
 Example:
 
 ```bash
-cd ~/lr-share
 export CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
 export NOTARY_PROFILE="lr-share-notary"
 ./release-signed.sh
@@ -92,7 +89,6 @@ xcrun notarytool store-credentials "lr-share-notary" \
 ## Install to Lightroom Modules
 
 ```bash
-cd ~/lr-share
 ./build.sh
 ./install.sh
 ```
@@ -163,6 +159,6 @@ This plugin uses Lightroom temporary rendering (`canExportToTemporaryLocation = 
 
 - This project is actively used and the core export/share flow is stable.
 - Load only `dist/MacOSShareMenu.lrplugin` in Lightroom Plugin Manager.
-- One-time cleanup: if you still have an old source folder at `~/lr-share/MacOSShareMenu.lrplugin`, remove it to avoid confusion.
+- One-time cleanup: if you still have an old source folder at `MacOSShareMenu.lrplugin`, remove it to avoid confusion.
 - Keep executable paths absolute unless intentionally using `_PLUGIN.path` for plugin-relative binaries.
 - If a command fails, Lightroom export is marked failed and a dialog is shown.
