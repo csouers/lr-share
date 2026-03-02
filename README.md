@@ -31,7 +31,7 @@ The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrp
 ## Build
 
 ```bash
-cd /Volumes/csouers/lr-share
+cd ~/lr-share
 ./build.sh
 ```
 
@@ -45,16 +45,60 @@ Optional debug build:
 ./build.sh debug
 ```
 
+## Signed release (Developer ID + notarization)
+
+Use the dedicated release script when distributing to other machines:
+
+```bash
+cd ~/lr-share
+./release-signed.sh
+```
+
+Required environment variables:
+- `CODESIGN_IDENTITY` (example: `Developer ID Application: Your Name (TEAMID)`)
+- `NOTARY_PROFILE` (name created with `xcrun notarytool store-credentials`)
+
+Example:
+
+```bash
+cd ~/lr-share
+export CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+export NOTARY_PROFILE="lr-share-notary"
+./release-signed.sh
+```
+
+Optional debug build:
+
+```bash
+./release-signed.sh debug
+```
+
+One-time setup for a notary profile in your keychain:
+
+```bash
+xcrun notarytool store-credentials "lr-share-notary" \
+  --apple-id "you@example.com" \
+  --team-id "TEAMID1234" \
+  --password "app-specific-password"
+```
+
+`release-signed.sh`:
+- Builds the plugin via `./build.sh`
+- Signs `dist/MacOSShareMenu.lrplugin/Support/LightroomShareHelper.app`
+- Notarizes and staples that helper app
+- Produces `dist/MacOSShareMenu.lrplugin.zip` for distribution
+- Removes the temporary helper notarization zip on success
+
 ## Install to Lightroom Modules
 
 ```bash
-cd /Volumes/csouers/lr-share
+cd ~/lr-share
 ./build.sh
 ./install.sh
 ```
 
 Default install target:
-`/Volumes/csouers/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
+`~/Library/Application Support/Adobe/Lightroom/Modules/MacOSShareMenu.lrplugin`
 
 Optional custom Modules path:
 
@@ -119,6 +163,6 @@ This plugin uses Lightroom temporary rendering (`canExportToTemporaryLocation = 
 
 - This project is actively used and the core export/share flow is stable.
 - Load only `dist/MacOSShareMenu.lrplugin` in Lightroom Plugin Manager.
-- One-time cleanup: if you still have an old source folder at `/Volumes/csouers/lr-share/MacOSShareMenu.lrplugin`, remove it to avoid confusion.
+- One-time cleanup: if you still have an old source folder at `~/lr-share/MacOSShareMenu.lrplugin`, remove it to avoid confusion.
 - Keep executable paths absolute unless intentionally using `_PLUGIN.path` for plugin-relative binaries.
 - If a command fails, Lightroom export is marked failed and a dialog is shown.
