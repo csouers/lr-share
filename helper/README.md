@@ -2,7 +2,9 @@
 
 macOS helper app used by the `MacOSShareMenu.lrplugin` export destination.
 
-When Lightroom opens this app with exported files, it immediately displays the macOS native Share picker (`NSSharingServicePicker`) for those files.
+Modes:
+- Default (`share`): opens the macOS native Share picker (`NSSharingServicePicker`) for the exported files.
+- `--mode clipboard-image-data`: copies exported images to the macOS clipboard as image-data pasteboard items.
 
 ## Build
 
@@ -37,11 +39,23 @@ Output app bundle:
 
 ## Test outside Lightroom
 
+Share picker mode:
+
 ```bash
 open -a ~/lr-share/helper/dist/LightroomShareHelper.app /path/to/image.jpg
 ```
 
 You should see only the native Share picker (no visible helper window).
+
+Clipboard mode:
+
+```bash
+~/lr-share/helper/dist/LightroomShareHelper.app/Contents/MacOS/LightroomShareHelper \
+  --mode clipboard-image-data \
+  /path/to/image-1.jpg /path/to/image-2.jpg
+```
+
+Clipboard mode exits `0` on full success and non-zero on invalid args or copy failures.
 
 ## Plugin integration setup
 

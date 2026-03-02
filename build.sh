@@ -10,6 +10,9 @@ if [[ "$BUILD_CONFIG" != "release" && "$BUILD_CONFIG" != "debug" ]]; then
   exit 1
 fi
 
+# === Build Share Plugin ===
+echo "=== Building Mac OS Share Plugin ==="
+
 SOURCE_PLUGIN_DIR="$ROOT_DIR/plugin-src/MacOSShareMenu.lrplugin"
 HELPER_BUILD_SCRIPT="$ROOT_DIR/helper/scripts/build-app-bundle.sh"
 HELPER_APP_DIR="$ROOT_DIR/helper/dist/LightroomShareHelper.app"
@@ -28,6 +31,7 @@ if [[ ! -x "$HELPER_BUILD_SCRIPT" ]]; then
   exit 1
 fi
 
+echo "Building share helper..."
 "$HELPER_BUILD_SCRIPT" "$BUILD_CONFIG"
 
 if [[ ! -d "$HELPER_APP_DIR" ]]; then
@@ -47,10 +51,44 @@ if [[ ! -x "$OUTPUT_HELPER_BINARY" ]]; then
   exit 1
 fi
 
-echo "Build complete."
-echo "Plugin bundle:"
-echo "$OUTPUT_PLUGIN_DIR"
-echo
-echo "In Lightroom Classic: File > Plug-in Manager > Add"
-echo "Select:"
-echo "$OUTPUT_PLUGIN_DIR"
+echo "Share plugin built: $OUTPUT_PLUGIN_DIR"
+
+# === Build Clipboard Plugin ===
+echo ""
+echo "=== Building Mac OS Clipboard Plugin ==="
+
+CLIPBOARD_SOURCE="$ROOT_DIR/clipboard-plugin/MacOSClipboard.lrplugin"
+CLIPBOARD_HELPER_BUILD_SCRIPT="$ROOT_DIR/helper-clipboard/scripts/build-app-bundle.sh"
+CLIPBOARD_HELPER_APP_DIR="$ROOT_DIR/helper-clipboard/dist/LightroomClipboardHelper.app"
+CLIPBOARD_OUTPUT_DIR="$DIST_DIR/MacOSClipboard.lrplugin"
+CLIPBOARD_OUTPUT_HELPER="$CLIPBOARD_OUTPUT_DIR/Support/LightroomClipboardHelper.app"
+
+if [[ ! -d "$CLIPBOARD_SOURCE" ]]; then
+  echo "Clipboard plugin source not found: $CLIPBOARD_SOURCE" >&2
+  exit 1
+fi
+
+if [[ ! -x "$CLIPBOARD_HELPER_BUILD_SCRIPT" ]]; then
+  echo "Clipboard helper build script not executable: $CLIPBOARD_HELPER_BUILD_SCRIPT" >&2
+  exit 1
+fi
+
+echo "Building clipboard helper..."
+"$CLIPBOARD_HELPER_BUILD_SCRIPT" "$BUILD_CONFIG"
+
+if [[ ! -d "$CLIPBOARD_HELPER_APP_DIR" ]]; then
+  echo "Built clipboard helper app not found: $CLIPBOARD_HELPER_APP_DIR" >&2
+  exit 1
+fi
+
+rsync -a "$CLIPBOARD_SOURCE/" "$CLIPBOARD_OUTPUT_DIR/"
+mkdir -p "$CLIPBOARD_OUTPUT_DIR/Support"
+rsync -a --delete "$CLIPBOARD_HELPER_APP_DIR/" "$CLIPBOARD_OUTPUT_HELPER/"
+
+echo "Clipboard plugin built: $CLIPBOARD_OUTPUT_DIR"
+
+echo ""
+echo "=== Build Complete ==="
+echo "Plugins:"
+echo "  - $OUTPUT_PLUGIN_DIR"
+echo "  - $CLIPBOARD_OUTPUT_DIR"

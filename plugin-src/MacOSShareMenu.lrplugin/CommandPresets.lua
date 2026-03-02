@@ -11,6 +11,6 @@ return {
             args = {},
             stageFiles = true,
             description = 'Stages files to /tmp, then runs the embedded helper binary to show NSSharingServicePicker.',
-        }
+        },
     }
 }

@@ -1,15 +1,13 @@
 return {
     LrSdkVersion = 13.0,
     LrSdkMinimumVersion = 6.0,
-    LrToolkitIdentifier = 'com.csouers.macossharemenu',
+    LrToolkitIdentifier = 'com.csouers.macosclipboard2026',
     LrPluginName = 'Mac OS',
     LrPluginInfoUrl = 'https://github.com/csouers/lr-share',
 
-
-
     LrExportServiceProvider = {
         title = 'Mac OS',
-        file = 'MacOSShareMenuExportServiceProvider.lua',
+        file = 'MacOSClipboardExportServiceProvider.lua',
         builtInPresetsDir = 'presets',
     },
 

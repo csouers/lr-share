@@ -1,0 +1,13 @@
+s = {
+    internalName = "Copy To Clipboard - JPEG",
+    title = "Copy To Clipboard - JPEG",
+    type = "Export",
+    value = {
+        exportServiceProvider = "com.csouers.macosclipboard2026",
+        exportServiceProviderTitle = "Mac OS",
+        format = "JPEG",
+        export_colorSpace = "DisplayP3",
+        jpeg_quality = 0.9,
+    },
+    version = 0,
+}

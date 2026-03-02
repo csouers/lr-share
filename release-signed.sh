@@ -57,63 +57,95 @@ fi
 
 BUILD_SCRIPT="$ROOT_DIR/build.sh"
 DIST_DIR="$ROOT_DIR/dist"
-PLUGIN_DIR="$DIST_DIR/MacOSShareMenu.lrplugin"
-HELPER_APP="$PLUGIN_DIR/Support/LightroomShareHelper.app"
-HELPER_ZIP="$DIST_DIR/LightroomShareHelper.notarize.zip"
-PLUGIN_ZIP="$DIST_DIR/MacOSShareMenu.lrplugin.zip"
 
-echo "Building unsigned plugin bundle..."
+# Share plugin
+SHARE_PLUGIN_DIR="$DIST_DIR/MacOSShareMenu.lrplugin"
+SHARE_HELPER_APP="$SHARE_PLUGIN_DIR/Support/LightroomShareHelper.app"
+SHARE_HELPER_ZIP="$DIST_DIR/LightroomShareHelper.notarize.zip"
+SHARE_PLUGIN_ZIP="$DIST_DIR/MacOSShareMenu.lrplugin.zip"
+
+# Clipboard plugin
+CLIPBOARD_PLUGIN_DIR="$DIST_DIR/MacOSClipboard.lrplugin"
+CLIPBOARD_HELPER_APP="$CLIPBOARD_PLUGIN_DIR/Support/LightroomClipboardHelper.app"
+CLIPBOARD_HELPER_ZIP="$DIST_DIR/LightroomClipboardHelper.notarize.zip"
+CLIPBOARD_PLUGIN_ZIP="$DIST_DIR/MacOSClipboard.lrplugin.zip"
+
+echo "Building unsigned plugin bundles..."
 "$BUILD_SCRIPT" "$BUILD_CONFIG"
 
-if [[ ! -d "$PLUGIN_DIR" ]]; then
-  echo "Built plugin bundle not found: $PLUGIN_DIR" >&2
+if [[ ! -d "$SHARE_PLUGIN_DIR" ]]; then
+  echo "Built share plugin bundle not found: $SHARE_PLUGIN_DIR" >&2
   exit 1
 fi
 
-if [[ ! -d "$HELPER_APP" ]]; then
-  echo "Helper app not found inside plugin: $HELPER_APP" >&2
+if [[ ! -d "$SHARE_HELPER_APP" ]]; then
+  echo "Share helper app not found: $SHARE_HELPER_APP" >&2
   exit 1
 fi
 
-echo "Signing helper app bundle..."
-codesign --force --timestamp --options runtime --sign "$CODESIGN_IDENTITY" "$HELPER_APP"
-
-echo "Verifying signature..."
-codesign --verify --strict --verbose=2 "$HELPER_APP"
-
-echo "Preparing helper app zip for notarization..."
-rm -f "$HELPER_ZIP"
-ditto -c -k --keepParent "$HELPER_APP" "$HELPER_ZIP"
-
-echo "Submitting helper app for notarization..."
-NOTARY_OUTPUT="$(xcrun notarytool submit "$HELPER_ZIP" --keychain-profile "$NOTARY_PROFILE" --wait --output-format json)"
-printf '%s\n' "$NOTARY_OUTPUT"
-
-if ! printf '%s\n' "$NOTARY_OUTPUT" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"Accepted"'; then
-  echo "Notarization did not return status Accepted." >&2
-  echo "Temporary notarization archive retained for debugging: $HELPER_ZIP" >&2
+if [[ ! -d "$CLIPBOARD_PLUGIN_DIR" ]]; then
+  echo "Built clipboard plugin bundle not found: $CLIPBOARD_PLUGIN_DIR" >&2
   exit 1
 fi
 
-echo "Stapling notarization ticket to helper app..."
-xcrun stapler staple -v "$HELPER_APP"
+if [[ ! -d "$CLIPBOARD_HELPER_APP" ]]; then
+  echo "Clipboard helper app not found: $CLIPBOARD_HELPER_APP" >&2
+  exit 1
+fi
 
-echo "Validating stapled ticket..."
-xcrun stapler validate -v "$HELPER_APP"
+sign_and_notarize() {
+  local app="$1"
+  local zip="$2"
+  local label="$3"
 
-echo "Running Gatekeeper assessment..."
-spctl --assess --type execute --verbose=4 "$HELPER_APP"
+  echo ""
+  echo "=== Signing $label ==="
+  codesign --force --timestamp --options runtime --sign "$CODESIGN_IDENTITY" "$app"
 
-echo "Creating signed plugin zip artifact..."
-rm -f "$PLUGIN_ZIP"
-ditto -c -k --keepParent "$PLUGIN_DIR" "$PLUGIN_ZIP"
+  echo "Verifying signature..."
+  codesign --verify --strict --verbose=2 "$app"
 
-rm -f "$HELPER_ZIP"
+  echo "Preparing zip for notarization..."
+  rm -f "$zip"
+  ditto -c -k --keepParent "$app" "$zip"
 
-echo
+  echo "Submitting for notarization..."
+  NOTARY_OUTPUT="$(xcrun notarytool submit "$zip" --keychain-profile "$NOTARY_PROFILE" --wait --output-format json)"
+  printf '%s\n' "$NOTARY_OUTPUT"
+
+  if ! printf '%s\n' "$NOTARY_OUTPUT" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"Accepted"'; then
+    echo "Notarization did not return status Accepted." >&2
+    echo "Temporary notarization archive retained for debugging: $zip" >&2
+    exit 1
+  fi
+
+  echo "Stapling notarization ticket..."
+  xcrun stapler staple -v "$app"
+
+  echo "Validating stapled ticket..."
+  xcrun stapler validate -v "$app"
+
+  echo "Running Gatekeeper assessment..."
+  spctl --assess --type execute --verbose=4 "$app"
+
+  rm -f "$zip"
+}
+
+sign_and_notarize "$SHARE_HELPER_APP" "$SHARE_HELPER_ZIP" "LightroomShareHelper"
+sign_and_notarize "$CLIPBOARD_HELPER_APP" "$CLIPBOARD_HELPER_ZIP" "LightroomClipboardHelper"
+
+echo ""
+echo "=== Creating signed release zip ==="
+RELEASE_ZIP="$DIST_DIR/MacOS-LrPlugins.zip"
+rm -f "$RELEASE_ZIP"
+ditto -c -k --keepParent "$SHARE_PLUGIN_DIR" "$RELEASE_ZIP"
+ditto -c -k --keepParent "$CLIPBOARD_PLUGIN_DIR" "$RELEASE_ZIP"
+
+echo ""
 echo "Signed release complete."
-echo "Plugin bundle:"
-echo "$PLUGIN_DIR"
-echo
-echo "Plugin zip:"
-echo "$PLUGIN_ZIP"
+echo "Plugin bundles:"
+echo "  - $SHARE_PLUGIN_DIR"
+echo "  - $CLIPBOARD_PLUGIN_DIR"
+echo ""
+echo "Release zip:"
+echo "  - $RELEASE_ZIP"

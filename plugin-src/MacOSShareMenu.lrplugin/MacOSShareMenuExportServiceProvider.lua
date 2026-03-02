@@ -242,9 +242,15 @@ function exportProvider.processRenderedPhotos(_, exportContext)
     local selectedPreset = nil
 
     if config then
-        selectedPreset = findPreset(config, exportContext.propertyTable.lrsm_presetId)
+        local presetId = exportContext.propertyTable.lrsm_presetId
+        
+        if presetId then
+            selectedPreset = findPreset(config, presetId)
+        end
+        
         if not selectedPreset then
-            selectedPreset = findPreset(config, config.defaultPresetId or firstPresetId(config))
+            local fallbackId = config.defaultPresetId or firstPresetId(config)
+            selectedPreset = findPreset(config, fallbackId)
         end
     end
 
@@ -319,6 +325,7 @@ function exportProvider.processRenderedPhotos(_, exportContext)
     end
 
     local exitCode = LrTasks.execute(command)
+
     removeStagingDirectory(stagedDirectory)
 
     if exitCode ~= 0 then
