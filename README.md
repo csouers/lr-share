@@ -162,6 +162,5 @@ The built plugin contains `LightroomShareHelper.app` at `dist/MacOSShareMenu.lrp
 
 - This project is actively used and the core export/share flow is stable.
 - Load only `dist/MacOSShareMenu.lrplugin` in Lightroom Plugin Manager.
-- One-time cleanup: if you still have an old source folder at `MacOSShareMenu.lrplugin`, remove it to avoid confusion.
 - Keep executable paths absolute unless intentionally using `_PLUGIN.path` for plugin-relative binaries.
 - If a command fails, Lightroom export is marked failed and a dialog is shown.
